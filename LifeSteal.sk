@@ -1,0 +1,62 @@
+#----------------------------------------------------#
+#                Made                                #
+#            By Milk_And_Cereal                      #
+#                                                    #
+#             Free Resource                          #
+#----------------------------------------------------#
+
+Options:
+	prefix: SOUL
+	CombatSeconds: 15 seconds
+	skipCombatPermission: staff.skript
+
+on death of player:
+	force event-player to respawn
+	delete {stats::%victim's uuid%::combat}	
+	"%attacker%" parsed as offline player is online
+	if victim's max health > 1:
+		add 1 to attacker's max health
+		remove 1 from victim's max health
+		set the death message to "&5&l{@prefix} &8&l»&5 %victim%&5 (%victim's max health%&5)&7 got executed by &5%attacker%&5 (%attacker's max health%&5)"
+		send title "&5&l{@prefix}" with subtitle "&dYou Have stole a piece of his soul" to attacker for 3 seconds
+		send title "&5&l{@prefix}" with subtitle "&dA Piece if your soul has been stolen" to victim for 3 seconds
+	else:
+		set the death message to "&5&l{@prefix} &8&l»&5 %victim%&5 (%victim's max health%&5)&7 got executed by &5%attacker%&5 (%attacker's max health%&5)"
+		send title "&5&l{@prefix}" with subtitle "&7His soul is empty" to attacker for 3 seconds
+		send title "&8&l{@prefix}" with subtitle "&7Your soul is empty" to victim for 3 seconds
+
+
+
+on damage of player:
+	"%attacker%" parsed as offline player is online
+	set {_id} to unix timestamp of now
+	combat(attacker, {_id})
+	combat(victim, {_id})
+
+
+
+function combat(p: player, id: number):
+	set {_u} to uuid of {_p}
+	set {stats::%{_u}%::combat} to {_id}
+	wait 1 tick
+	while {stats::%{_u}%::combat} = {_id}:
+		wait 1 second
+		set {_time} to "%difference between unix timestamp of now and {_id}% seconds" parsed as timespan
+		send action bar "&5&l{@prefix} &8»&d %difference between {@CombatSeconds} and {_time}%&7 Combat log" to {_p}
+		if {_time} >= {@CombatSeconds}:
+			delete {stats::%{_u}%::combat}
+
+on quit:
+	{stats::%player's uuid%::combat} is set
+	player doesn't have permission "{@skipCombatPermission}"
+	kill player
+	delete {stats::%player's uuid%::combat}	
+
+on command:
+	{stats::%player's uuid%::combat} is set
+	player doesn't have permission "{@skipCombatPermission}"
+	cancel event
+	message "&5&l{@prefix} &8»&7 You're not allowed to use commands while you're in combat log."
+
+
+	
